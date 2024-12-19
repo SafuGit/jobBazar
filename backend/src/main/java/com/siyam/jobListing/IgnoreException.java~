@@ -1,0 +1,4 @@
+package com.siyam.jobListing;
+
+public class IgnoreException {
+}
