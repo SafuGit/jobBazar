@@ -53,4 +53,12 @@ public class UserService {
     public ResponseEntity<List<User>> getALlUsers() {
         return ResponseEntity.ok(userRepository.findAll());
     }
+
+    public void updateProfilePicture(Long userId, String filePath) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        user.setProfilePicture(filePath);
+        userRepository.save(user); // Save the updated user
+    }
 }

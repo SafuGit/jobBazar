@@ -53,8 +53,5 @@ public class User {
         this.id = id;
     }
 
-    @Column(name = "profile_picture")
-    private String profilePicture;
-
     // Getters and Setters
 }
