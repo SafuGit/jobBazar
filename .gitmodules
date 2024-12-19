@@ -1,0 +1,3 @@
+[submodule "jobFrontend"]
+	path = jobFrontend
+	url = https://github.com/SafuGit/jobBazarFrontend.git
