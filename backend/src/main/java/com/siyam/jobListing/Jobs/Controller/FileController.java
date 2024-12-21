@@ -21,7 +21,7 @@ import java.nio.file.StandardCopyOption;
 
 @RestController
 @RequestMapping("/api/uploads")
-public class ImageController {
+public class FileController {
 
     private final UserService userService;
     private final UserRepository userRepository;
@@ -29,7 +29,7 @@ public class ImageController {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    public ImageController(UserService userService, UserRepository userRepository) {
+    public FileController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
     }
@@ -57,6 +57,59 @@ public class ImageController {
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         return filePath.toString();
+    }
+
+    @PostMapping("/pdf/{userId}")
+    public ResponseEntity<String> uploadPdf(@RequestParam("file") MultipartFile file, @PathVariable Long userId) {
+        try {
+            String filePath = savePdf(file);
+
+            userService.updateCvFile(userId, filePath);
+
+            return ResponseEntity.ok("PDF uploaded successfully: " + filePath);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading pdf");
+        }
+    }
+
+    private String savePdf(MultipartFile file) throws IOException {
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String fileName = file.getOriginalFilename();
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return filePath.toString();
+    }
+
+    @GetMapping("/pdf/{userId}")
+    public ResponseEntity<Resource> getCvFile(@PathVariable Long userId) {
+        try {
+            // Fetch the user
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+            // Get the file path of the profile picture
+            String cvFile = user.getCvFile();
+            if (cvFile == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Serve the image file
+            Path filePath = Paths.get(cvFile);
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(Files.probeContentType(filePath)))
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/images/{fileName}")

@@ -61,4 +61,12 @@ public class UserService {
         user.setProfilePicture(filePath);
         userRepository.save(user); // Save the updated user
     }
+
+    public void updateCvFile(Long userId, String filePath) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        user.setCvFile(filePath);
+        userRepository.save(user); // Save the updated user
+    }
 }
