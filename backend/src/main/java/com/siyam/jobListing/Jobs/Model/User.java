@@ -56,5 +56,8 @@ public class User {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name = "cv_file")
+    private String cvFile;
+
     // Getters and Setters
 }
